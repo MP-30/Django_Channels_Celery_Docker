@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+
+  redis:
+    image: redis:7.2.4-alpine
+  django:
+    container_name: django
+    build:
+      context: ./dcelery
+    command: python manage.py runserver 0.0.0.0:5000
+    volumes:
+      - ./dcelery:/usr/src/app/
+    ports:
+      - 5001:5000
+    environment:
+      - DEBUG=1
+      - SECRET_KEY=4657d68s5d4s654d65s1df657fg4d65g41
+      - ALLOWED_HOSTS=localhost,172.18.0.1,192.168.29.164,127.0.0.1
+    depends_on:
+      - redis 
+
+  celery:
+      container_name: celery
+      build:
+        context: ./dcelery
+      command: celery --app=dcelery worker -l INFO
+      volumes:
+        - ./dcelery:/usr/src/app/
+      environment:
+        - DEBUG=1
+        - SECRET_KEY=4657d68s5d4s654d65s1df657fg4d65g41
+        - ALLOWED_HOSTS=localhost,172.18.0.1,192.168.29.164,127.0.0.1
+      depends_on:
+        - redis 
